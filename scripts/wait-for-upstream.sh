@@ -2,7 +2,7 @@
 
 set -e
 
-HOST=${AUTH_SERVICE_IP:-localhost:3000}
+HOST="auth-service:3000"
 URL="http://$HOST/health"
 
 echo "Waiting for upstream service at $URL..."
