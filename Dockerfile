@@ -8,9 +8,6 @@ WORKDIR /app
 FROM chef AS planner
 COPY . .
 
-# Install curl
-RUN apk add --no-cache curl
-
 # Capture info needed to build dependencies
 RUN cargo chef prepare --recipe-path recipe.json
 
@@ -22,11 +19,20 @@ RUN cargo chef cook --release --recipe-path recipe.json
 COPY . .
 RUN cargo build --release
 
+
 # We do not need the Rust toolchain to run the binary!
 # Start with a minimal image and copy over the binary and assets folder.
-FROM debian:buster-slim AS runtime
+FROM debian:bullseye-slim AS runtime
 WORKDIR /app
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends curl ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=builder /app/scripts/wait-for-upstream.sh /usr/local/bin/wait-for-upstream.sh
+RUN chmod +x /usr/local/bin/wait-for-upstream.sh
+
 COPY --from=builder /app/target/release/app-service /usr/local/bin
 COPY --from=builder /app/assets /app/assets
 ENV AUTH_SERVICE_HOST_NAME=auth-service
-ENTRYPOINT ["/usr/local/bin/app-service"]
+ENTRYPOINT ["/usr/local/bin/wait-for-upstream.sh"]
