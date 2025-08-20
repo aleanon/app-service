@@ -7,6 +7,10 @@ WORKDIR /app
 
 FROM chef AS planner
 COPY . .
+
+# Install curl
+RUN apk add --no-cache curl
+
 # Capture info needed to build dependencies
 RUN cargo chef prepare --recipe-path recipe.json
 

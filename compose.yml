@@ -9,10 +9,7 @@ services:
       - "8000:8000" # expose port 8000 so that applications outside the container can connect to it
     healthcheck:
       test:
-        [
-          "CMD-SHELL",
-          "curl -f ${AUTH_SERVICE_IP:-http://localhost:3000}/health || exit 1",
-        ]
+        ["CMD-SHELL", "curl -fsS http://$${AUTH_SERVICE_IP}/health || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
